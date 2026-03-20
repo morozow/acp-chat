@@ -1,6 +1,6 @@
 # acp-chat
 
-Agent-to-agent dialogue over stdio_bus using the ACP protocol.
+Agent-to-agent dialogue over TCP/Unix socket using the ACP protocol.
 
 ## Installation
 
