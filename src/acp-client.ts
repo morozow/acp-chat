@@ -106,6 +106,7 @@ export interface ACPClientOptions {
   agentId: string;
   requestTimeoutMs?: number;
   clientInfo?: { name: string; title?: string; version?: string };
+  clientSessionId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +119,7 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
   const requestTracker = createRequestTracker({ defaultTimeoutMs: requestTimeoutMs });
 
   let nextId = 1;
-  const clientSessionId = `client-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const clientSessionId = opts.clientSessionId ?? `client-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pendingUpdates = new Map<string, SessionUpdate[]>();
 
   ndjsonClient.on('message', (msg: unknown) => {

@@ -18,8 +18,8 @@
 // ACP Chat CLI — single-turn tool for agent-to-agent dialogue
 // ============================================================================
 // Usage:
-//   acp-chat new "Hello"           — create session + send
-//   acp-chat <sessionId> "Hello"   — continue session
+//   acp-chat new "Hello"                              — create session + send
+//   acp-chat <clientSessionId> <sessionId> "Hello"   — continue session
 
 import { NDJSONClient } from './ndjson-client.js';
 import { createACPClient, type SessionUpdate } from './acp-client.js';
@@ -28,10 +28,28 @@ const BUS_ADDRESS = process.env['ACP_BUS_ADDRESS'] ?? '127.0.0.1:9800';
 const AGENT_ID = process.env['ACP_AGENT_ID'] ?? 'codex-acp';
 
 async function main() {
-  const [sessionArg, message] = process.argv.slice(2);
-  if (!sessionArg || !message) {
-    console.error('Usage: acp-chat <sessionId|"new"> "<message>"');
-    process.exit(1);
+  const args = process.argv.slice(2);
+
+  let clientSessionId: string | undefined;
+  let sessionId: string | undefined;
+  let message: string;
+
+  if (args[0] === 'new') {
+    // acp-chat new "message"
+    if (args.length < 2) {
+      console.error('Usage: acp-chat new "<message>"');
+      process.exit(1);
+    }
+    message = args[1];
+  } else {
+    // acp-chat <clientSessionId> <sessionId> "message"
+    if (args.length < 3) {
+      console.error('Usage: acp-chat <clientSessionId> <sessionId> "<message>"');
+      process.exit(1);
+    }
+    clientSessionId = args[0];
+    sessionId = args[1];
+    message = args[2];
   }
 
   const ndjsonClient = new NDJSONClient({
@@ -49,6 +67,7 @@ async function main() {
       agentId: AGENT_ID,
       requestTimeoutMs: 5 * 60 * 1000,
       clientInfo: { name: 'acp-chat-cli', version: '1.0.0' },
+      clientSessionId,
     });
 
     client.on('update', (_sid: string, update: SessionUpdate) => {
@@ -59,14 +78,13 @@ async function main() {
 
     await client.initialize();
 
-    let sessionId: string;
-    if (sessionArg === 'new') {
+    if (!sessionId) {
       const session = await client.sessionNew();
       sessionId = session.sessionId;
       console.error(`CLIENT_SESSION_ID=${session.clientSessionId}`);
       console.error(`SESSION_ID=${sessionId}`);
     } else {
-      sessionId = sessionArg;
+      console.error(`CLIENT_SESSION_ID=${clientSessionId}`);
       console.error(`SESSION_ID=${sessionId} (continued)`);
     }
 
