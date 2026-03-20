@@ -13,10 +13,20 @@ npm install acp-chat
 ```bash
 # Create new session and send message
 npx acp-chat new "Hello"
+# Output:
+#   CLIENT_SESSION_ID=client-1234567890-abc123
+#   SESSION_ID=019d0a91-deb3-72c1-857a-80cfeea503cc
+#   <agent response>
 
-# Continue existing session
-npx acp-chat <sessionId> "Follow-up message"
+# Continue existing session (requires both IDs)
+npx acp-chat <clientSessionId> <sessionId> "Follow-up message"
+# Example:
+npx acp-chat client-1234567890-abc123 019d0a91-deb3-72c1-857a-80cfeea503cc "What about X?"
 ```
+
+Environment variables:
+- `ACP_BUS_ADDRESS` — bus address (default: `127.0.0.1:9800`)
+- `ACP_AGENT_ID` — target agent ID (default: `codex-acp`)
 
 ## Programmatic Usage
 
@@ -37,6 +47,8 @@ const client = createACPClient(ndjsonClient, {
   agentId: 'codex-acp',
   requestTimeoutMs: 5 * 60 * 1000,
   clientInfo: { name: 'my-app', version: '1.0.0' },
+  // For continuing a session, pass the clientSessionId:
+  // clientSessionId: 'client-1234567890-abc123',
 });
 
 // Stream responses in real-time
@@ -49,6 +61,9 @@ client.on('update', (sessionId, update) => {
 await client.initialize();
 
 const session = await client.sessionNew();
+// Save both IDs for continuing the session later:
+// - session.clientSessionId — needed to restore client connection
+// - session.sessionId — needed to identify the dialogue
 const result = await client.sessionPrompt(session.sessionId, 'Hello!');
 
 console.log(result.text);
@@ -70,11 +85,12 @@ Options:
 - `agentId`: Target agent identifier
 - `requestTimeoutMs`: Request timeout (default: 120000)
 - `clientInfo`: Client identification info
+- `clientSessionId`: Existing client session ID (for continuing sessions)
 
 ### Client Methods
 
 - `initialize()`: Initialize the ACP connection
-- `sessionNew(configOptions?)`: Create a new session
+- `sessionNew(configOptions?)`: Create a new session (returns `sessionId` and `clientSessionId`)
 - `sessionPrompt(sessionId, text, role?)`: Send a prompt
 - `sessionConfigure(sessionId, options)`: Configure session
 - `sessionCancel(sessionId)`: Cancel ongoing operation
