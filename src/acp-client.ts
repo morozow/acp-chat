@@ -169,8 +169,7 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
     if (configOptions?.length) params['configOptions'] = configOptions;
     const resp = await send('session/new', params);
     if (resp.error) throw new Error(`session/new: [${resp.error.code}] ${resp.error.message}`);
-    const result = resp.result as SessionNewResult;
-    return { ...result, clientSessionId };
+    return { ...(resp.result as SessionNewResult), clientSessionId };
   }
 
   async function sessionPrompt(sessionId: string, text: string, role = 'user'): Promise<PromptResult> {
