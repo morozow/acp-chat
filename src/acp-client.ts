@@ -65,6 +65,7 @@ export interface ToolCallStatusUpdate {
 
 export interface SessionNewResult {
   sessionId: string;
+  clientSessionId: string;
   modes?: unknown;
   models?: unknown;
   configOptions?: unknown;
@@ -168,7 +169,8 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
     if (configOptions?.length) params['configOptions'] = configOptions;
     const resp = await send('session/new', params);
     if (resp.error) throw new Error(`session/new: [${resp.error.code}] ${resp.error.message}`);
-    return resp.result as SessionNewResult;
+    const result = resp.result as SessionNewResult;
+    return { ...result, clientSessionId };
   }
 
   async function sessionPrompt(sessionId: string, text: string, role = 'user'): Promise<PromptResult> {

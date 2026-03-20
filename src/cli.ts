@@ -62,7 +62,7 @@ async function main() {
     let sessionId: string;
     if (sessionArg === 'new') {
       const session = await client.sessionNew();
-      sessionId = session.sessionId;
+      sessionId = session.clientSessionId;
       console.error(`SESSION_ID=${sessionId}`);
     } else {
       sessionId = sessionArg;
