@@ -5,6 +5,10 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "url": "https://github.com/morozow/acp-chat",
+    "type": "git"
+  },
   "bin": {
     "acp-chat": "dist/cli.js"
   },
