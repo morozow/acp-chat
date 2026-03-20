@@ -83,3 +83,7 @@ Options:
 
 - `update`: Session update notifications (streaming chunks, tool calls, etc.)
 - `notification`: Raw JSON-RPC notifications
+
+## License
+
+Apache-2.0
