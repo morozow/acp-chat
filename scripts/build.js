@@ -2,7 +2,6 @@ import * as esbuild from 'esbuild';
 import { execSync } from 'child_process';
 
 const shared = {
-  entryPoints: ['src/index.ts', 'src/cli.ts'],
   bundle: true,
   platform: 'node',
   target: 'node18',
@@ -11,19 +10,18 @@ const shared = {
   minify: true,
   treeShaking: true,
   sourcemap: false,
-  external: [],
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
+  drop: ['debugger'],
+  mangleProps: /^_/,
+  charset: 'utf8',
 };
 
-// Build with esbuild
+// Build index.js (library)
 await esbuild.build({
   ...shared,
-  banner: undefined, // No banner for index.js
   entryPoints: ['src/index.ts'],
 });
 
+// Build cli.js (shebang already in source)
 await esbuild.build({
   ...shared,
   entryPoints: ['src/cli.ts'],
