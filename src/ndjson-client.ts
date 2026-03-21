@@ -23,11 +23,47 @@ import { serializeNdjson, deserializeNdjsonLine } from './ndjson.js';
 import { DisconnectedError } from './errors.js';
 import type { ConnectionState } from './types.js';
 
+/**
+ * Interface representing the options for the NDJSON client configuration.
+ */
 export interface NDJSONClientOptions {
+
+  /**
+   * Represents a physical or virtual location identifier.
+   * This variable is used to store an address, which could be in various formats such as a street address, email address, or network address.
+   */
   address: string;
+
+  /**
+   * Specifies the type of connection to establish.
+   *
+   * The `connectionType` variable can take one of two possible string values:
+   * - `'tcp'`: Represents a Transmission Control Protocol connection, typically used for network communications over IP.
+   * - `'unix'`: Represents a Unix domain socket connection, commonly used for inter-process communication on the same host.
+   */
   connectionType: 'tcp' | 'unix';
+
+  /**
+   * The `maxReconnectAttempts` variable represents the maximum number of reconnection attempts that can be made in case of a disconnection.
+   * It is used to limit the number of times a reconnection process will be retried before giving up.
+   * This number is typically set based on the requirements for network reliability and performance.
+   */
   maxReconnectAttempts: number;
+
+  /**
+   * The baseReconnectDelayMs variable represents the initial delay in milliseconds before attempting to reconnect after a disconnection event occurs.
+   * It is used to set a foundational time duration for the reconnection logic, which may be adjusted by multiplying factors to implement exponential backoff strategies.
+   * This value is crucial in controlling the frequency and interval of reconnection attempts, ensuring a balance between rapid reconnection and resource consumption.
+   */
   baseReconnectDelayMs: number;
+
+  /**
+   * Represents the maximum delay, in milliseconds, before attempting to reconnect.
+   * This is used in networking or data communication contexts where repeated connection
+   * attempts are necessary after a disconnection. By setting a maximum reconnect delay,
+   * the application ensures that attempts to re-establish a connection do not exceed
+   * a specified threshold, potentially improving system responsiveness and user experience.
+   */
   maxReconnectDelayMs: number;
 }
 

@@ -2,6 +2,8 @@
 
 Agent-to-agent dialogue over TCP/Unix socket using the ACP protocol.
 
+![ACP Chat Example](https://raw.githubusercontent.com/morozow/acp-chat/main/assets/acp-chat-example.png)
+
 ## Installation
 
 ```bash
