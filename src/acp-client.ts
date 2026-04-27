@@ -102,11 +102,26 @@ export interface ACPClient extends EventEmitter {
   readonly requestTracker: RequestTracker;
 }
 
+export interface PermissionRequest {
+  id: string | number;
+  method: string;
+  params?: Record<string, unknown>;
+}
+
+export type PermissionHandler = (request: PermissionRequest) => PermissionResponse | Promise<PermissionResponse>;
+
+export interface PermissionResponse {
+  approved: boolean;
+  option?: string;
+}
+
 export interface ACPClientOptions {
   agentId: string;
   requestTimeoutMs?: number;
   clientInfo?: { name: string; title?: string; version?: string };
   clientSessionId?: string;
+  /** Handler for incoming permission requests. Defaults to auto-approve. */
+  permissionHandler?: PermissionHandler;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +129,7 @@ export interface ACPClientOptions {
 // ---------------------------------------------------------------------------
 
 export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptions): ACPClient {
-  const { agentId, requestTimeoutMs = 120_000, clientInfo } = opts;
+  const { agentId, requestTimeoutMs = 120_000, clientInfo, permissionHandler } = opts;
   const emitter = new EventEmitter();
   const requestTracker = createRequestTracker({ defaultTimeoutMs: requestTimeoutMs });
 
@@ -122,15 +137,65 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
   const clientSessionId = opts.clientSessionId ?? `client-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pendingUpdates = new Map<string, SessionUpdate[]>();
 
+  // Default permission handler: auto-approve all requests
+  const defaultPermissionHandler: PermissionHandler = () => ({
+    approved: true,
+    option: 'approved-execpolicy-amendment',
+  });
+
+  const resolvedPermissionHandler = permissionHandler ?? defaultPermissionHandler;
+
+  function sendResponse(id: string | number, result: unknown): void {
+    ndjsonClient.send({ jsonrpc: '2.0', id, result });
+  }
+
+  function sendErrorResponse(id: string | number, code: number, message: string): void {
+    ndjsonClient.send({ jsonrpc: '2.0', id, error: { code, message } });
+  }
+
+  async function handleIncomingRequest(id: string | number, method: string, params: Record<string, unknown> | undefined): Promise<void> {
+    if (method === 'session/request_permission') {
+      try {
+        const response = await resolvedPermissionHandler({ id, method, params });
+        sendResponse(id, {
+          permission: response.approved ? 'granted' : 'denied',
+          option: response.option ?? (response.approved ? 'approved-execpolicy-amendment' : 'denied'),
+        });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        sendErrorResponse(id, -32000, `Permission handler error: ${errMsg}`);
+      }
+    } else {
+      // Unknown incoming request — emit event and respond with method-not-found if no listener handles it
+      const handled = emitter.emit('incomingRequest', id, method, params);
+      if (!handled) {
+        sendErrorResponse(id, -32601, `Method not supported by client: ${method}`);
+      }
+    }
+  }
+
   ndjsonClient.on('message', (msg: unknown) => {
     const obj = msg as Record<string, unknown>;
     if (!obj || obj['jsonrpc'] !== '2.0') return;
 
+    // Case 1: Response to our outgoing request
     if ('id' in obj && ('result' in obj || 'error' in obj)) {
       requestTracker.resolve(obj as unknown as JsonRpcResponse);
       return;
     }
 
+    // Case 2: Incoming request from server/agent (has id + method, no result/error)
+    if ('id' in obj && 'method' in obj && !('result' in obj) && !('error' in obj)) {
+      const id = obj['id'] as string | number;
+      const method = obj['method'] as string;
+      const params = obj['params'] as Record<string, unknown> | undefined;
+      handleIncomingRequest(id, method, params).catch((err) => {
+        emitter.emit('error', err);
+      });
+      return;
+    }
+
+    // Case 3: Notification (no id)
     if ('method' in obj && !('id' in obj)) {
       const method = obj['method'] as string;
       const params = obj['params'] as Record<string, unknown> | undefined;

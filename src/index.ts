@@ -18,7 +18,7 @@
 // ============================================================================
 
 export { NDJSONClient, type NDJSONClientOptions, type NDJSONClientEvents } from './ndjson-client.js';
-export { createACPClient, type ACPClient, type ACPClientOptions, type SessionUpdate, type SessionNewResult, type PromptResult, type InitializeResult, type ConfigOption, type AgentMessageChunk, type PlanUpdate, type ToolCallUpdate, type ToolCallStatusUpdate } from './acp-client.js';
+export { createACPClient, type ACPClient, type ACPClientOptions, type SessionUpdate, type SessionNewResult, type PromptResult, type InitializeResult, type ConfigOption, type AgentMessageChunk, type PlanUpdate, type ToolCallUpdate, type ToolCallStatusUpdate, type PermissionRequest, type PermissionHandler, type PermissionResponse } from './acp-client.js';
 export { createRequestTracker, type RequestTracker, type RequestTrackerOptions } from './request-tracker.js';
 export { DisconnectedError, CapacityExceededError, RequestTimeoutError, ACPError, ErrorCodes } from './errors.js';
 export type { JsonRpcId, JsonRpcResponse, JsonRpcError, ConnectionState } from './types.js';
