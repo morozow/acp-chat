@@ -1,6 +1,6 @@
 {
   "name": "acp-chat",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "ACP Chat — agent-to-agent dialogue over TCP/Unix socket using the ACP protocol.",
   "type": "module",
   "main": "dist/index.js",
