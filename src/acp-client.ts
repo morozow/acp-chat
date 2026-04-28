@@ -99,6 +99,10 @@ export interface ACPClient extends EventEmitter {
   sessionPrompt(sessionId: string, text: string, role?: string): Promise<PromptResult>;
   sessionConfigure(sessionId: string, options: ConfigOption[]): Promise<void>;
   sessionCancel(sessionId: string): void;
+  /** Send a JSON-RPC response to an incoming request (e.g. permission request). */
+  sendResponse(id: string | number, result: unknown): void;
+  /** Send a JSON-RPC error response to an incoming request. */
+  sendErrorResponse(id: string | number, code: number, message: string): void;
   readonly requestTracker: RequestTracker;
 }
 
@@ -137,66 +141,74 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
   const clientSessionId = opts.clientSessionId ?? `client-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const pendingUpdates = new Map<string, SessionUpdate[]>();
 
-  // Default permission handler: auto-approve all requests
-  const defaultPermissionHandler: PermissionHandler = () => ({
-    approved: true,
-    option: 'approved-execpolicy-amendment',
-  });
-
-  const resolvedPermissionHandler = permissionHandler ?? defaultPermissionHandler;
-
   function sendResponse(id: string | number, result: unknown): void {
+    if (!ndjsonClient.isConnected()) return;
     ndjsonClient.send({ jsonrpc: '2.0', id, result });
   }
 
   function sendErrorResponse(id: string | number, code: number, message: string): void {
+    if (!ndjsonClient.isConnected()) return;
     ndjsonClient.send({ jsonrpc: '2.0', id, error: { code, message } });
   }
 
   async function handleIncomingRequest(id: string | number, method: string, params: Record<string, unknown> | undefined): Promise<void> {
     if (method === 'session/request_permission') {
-      try {
-        const response = await resolvedPermissionHandler({ id, method, params });
-        sendResponse(id, {
-          permission: response.approved ? 'granted' : 'denied',
-          option: response.option ?? (response.approved ? 'approved-execpolicy-amendment' : 'denied'),
-        });
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        sendErrorResponse(id, -32000, `Permission handler error: ${errMsg}`);
+      // Always emit the event so consumers can observe permission requests
+      emitter.emit('permissionRequest', { id, method, params });
+
+      // If a permissionHandler was provided, call it and send the response.
+      // This is for setups where the router does NOT auto-respond and the
+      // client is responsible for answering permission requests.
+      // When no handler is provided, we do NOT send a response — the stdio
+      // Bus router already auto-responds, and a duplicate would stall the session.
+      if (permissionHandler) {
+        try {
+          const response = await permissionHandler({ id, method, params });
+          sendResponse(id, {
+            permission: response.approved ? 'granted' : 'denied',
+            option: response.option ?? (response.approved ? 'approved-execpolicy-amendment' : 'denied'),
+          });
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          sendErrorResponse(id, -32000, `Permission handler error: ${errMsg}`);
+        }
       }
-    } else {
-      // Unknown incoming request — emit event and respond with method-not-found if no listener handles it
-      const handled = emitter.emit('incomingRequest', id, method, params);
-      if (!handled) {
-        sendErrorResponse(id, -32601, `Method not supported by client: ${method}`);
-      }
+      return;
     }
+
+    // For any other incoming request, surface it as an event
+    emitter.emit('incomingRequest', id, method, params);
   }
 
   ndjsonClient.on('message', (msg: unknown) => {
     const obj = msg as Record<string, unknown>;
     if (!obj || obj['jsonrpc'] !== '2.0') return;
 
-    // Case 1: Response to our outgoing request
-    if ('id' in obj && ('result' in obj || 'error' in obj)) {
+    const hasId = 'id' in obj;
+    const hasMethod = 'method' in obj;
+    const hasResult = 'result' in obj;
+    const hasError = 'error' in obj;
+
+    // Case 1: Response to our outgoing request (has id + result or error)
+    if (hasId && (hasResult || hasError)) {
       requestTracker.resolve(obj as unknown as JsonRpcResponse);
       return;
     }
 
     // Case 2: Incoming request from server/agent (has id + method, no result/error)
-    if ('id' in obj && 'method' in obj && !('result' in obj) && !('error' in obj)) {
+    // These are server→client requests like session/request_permission.
+    if (hasId && hasMethod && !hasResult && !hasError) {
       const id = obj['id'] as string | number;
       const method = obj['method'] as string;
       const params = obj['params'] as Record<string, unknown> | undefined;
-      handleIncomingRequest(id, method, params).catch((err) => {
-        emitter.emit('error', err);
+      handleIncomingRequest(id, method, params).catch(() => {
+        // Swallow — permission handler errors are already handled inside
       });
       return;
     }
 
-    // Case 3: Notification (no id)
-    if ('method' in obj && !('id' in obj)) {
+    // Case 3: Notification (method present, no id)
+    if (hasMethod && !hasId) {
       const method = obj['method'] as string;
       const params = obj['params'] as Record<string, unknown> | undefined;
 
@@ -279,5 +291,5 @@ export function createACPClient(ndjsonClient: NDJSONClient, opts: ACPClientOptio
     });
   }
 
-  return Object.assign(emitter, { initialize, sessionNew, sessionPrompt, sessionConfigure, sessionCancel, requestTracker }) as ACPClient;
+  return Object.assign(emitter, { initialize, sessionNew, sessionPrompt, sessionConfigure, sessionCancel, sendResponse, sendErrorResponse, requestTracker }) as ACPClient;
 }
