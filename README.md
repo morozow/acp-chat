@@ -1,20 +1,25 @@
-# acp-chat
+<h1 align="center">Agent-to-agent ACP Chat</h1>
 
-[![npm](https://img.shields.io/npm/v/acp-chat?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/acp-chat)
-[![stdioBus](https://img.shields.io/badge/ecosystem-stdio%20Bus-ff4500?style=for-the-badge)](https://github.com/stdiobus)
-[![MCP](https://img.shields.io/badge/protocol-MCP-purple?style=for-the-badge&logo=jsonwebtokens)](https://modelcontextprotocol.io)
-[![ACP](https://img.shields.io/badge/protocol-ACP-purple?style=for-the-badge&logo=jsonwebtokens)](https://agentclientprotocol.com)
-[![JSON‑RPC](https://img.shields.io/badge/transport-JSON--RPC%202.0-orange?style=for-the-badge&logo=json)](https://www.jsonrpc.org/specification)
-[![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
-[![TypeScript](https://img.shields.io/badge/typescript-strict-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
-[![Build](https://img.shields.io/badge/build-esbuild-yellow?style=for-the-badge&logo=esbuild)](https://esbuild.github.io)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey?style=for-the-badge&logo=nodedotjs)](https://github.com/morozow/acp-chat)
-[![Windows](https://img.shields.io/badge/Windows-via%20Docker-2496ED?style=for-the-badge&logo=docker)](https://github.com/morozow/acp-chat)
-[![npm downloads](https://img.shields.io/npm/dm/acp-chat?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/acp-chat)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge&logo=opensourceinitiative)](https://github.com/morozow/acp-chat/blob/main/LICENSE)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge&logo=packagephobia)](https://www.npmjs.com/package/acp-chat)
+<p align="center">
+  Agent-to-agent dialogue over TCP/Unix socket using the ACP protocol.
+</p>
 
-Agent-to-agent dialogue over TCP/Unix socket using the ACP protocol.
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/acp-chat" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/npm/v/acp-chat?style=for-the-badge&amp;logo=npm" alt="npm" title="npm: acp-chat" /></a>
+  <a href="https://github.com/stdiobus" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/ecosystem-stdio%20Bus-ff4500?style=for-the-badge" alt="stdioBus" title="stdio Bus ecosystem" /></a>
+  <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/protocol-MCP-purple?style=for-the-badge&amp;logo=jsonwebtokens" alt="MCP" title="MCP protocol" /></a>
+  <a href="https://agentclientprotocol.com" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/protocol-ACP-purple?style=for-the-badge&amp;logo=jsonwebtokens" alt="ACP" title="ACP protocol" /></a>
+  <a href="https://www.jsonrpc.org/specification" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/transport-JSON--RPC%202.0-orange?style=for-the-badge&amp;logo=json" alt="JSON-RPC" title="JSON-RPC 2.0" /></a>
+  <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=for-the-badge&amp;logo=nodedotjs" alt="Node.js" title="Node.js >= 18" /></a>
+  <a href="https://www.typescriptlang.org" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/typescript-strict-blue?style=for-the-badge&amp;logo=typescript" alt="TypeScript" title="TypeScript strict mode" /></a>
+  <a href="https://esbuild.github.io" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/build-esbuild-yellow?style=for-the-badge&amp;logo=esbuild" alt="Build" title="Build: esbuild" /></a>
+  <a href="https://github.com/morozow/acp-chat" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey?style=for-the-badge&amp;logo=nodedotjs" alt="Platform" title="macOS | Linux" /></a>
+  <a href="https://github.com/morozow/acp-chat" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Windows-via%20Docker-2496ED?style=for-the-badge&amp;logo=docker" alt="Windows" title="Windows via Docker" /></a>
+  <a href="https://www.npmjs.com/package/acp-chat" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/npm/dm/acp-chat?style=for-the-badge&amp;logo=npm" alt="npm downloads" title="npm downloads" /></a>
+  <a href="https://github.com/morozow/acp-chat/blob/main/LICENSE" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge&amp;logo=opensourceinitiative" alt="License" title="Apache-2.0" /></a>
+  <a href="https://www.npmjs.com/package/acp-chat" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge&amp;logo=packagephobia" alt="Zero dependencies" title="Zero dependencies" /></a>
+</p>
 
 ![ACP Chat Example](https://raw.githubusercontent.com/morozow/acp-chat/main/assets/acp-chat-example.png)
 
